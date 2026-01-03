@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  role          Role      @default(Student)
+  password      String
+  availability  Availability @default(Active)
+  status        String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  groupMemberships GroupMembership[]
+  createdGroups    Group[] @relation("GroupCreator")
+  createdTimetables Timetable[] @relation("TimetableCreator")
+  facultySlots     TimeSlot[] @relation("FacultySlots")
+  slotTypePreferences SlotTypePreference[]
+  batchPreferences    BatchPreference[]
+}
+
+enum Role {
+  HOD
+  Faculty
+  Student
+}
+
+enum Availability {
+  Active
+  Away
+  Busy
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String
+  shortName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  timeSlots TimeSlot[]
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  timeSlots TimeSlot[]
+}
+
+model SlotType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  timeSlots   TimeSlot[]
+  preferences SlotTypePreference[]
+}
+
+model Batch {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  timeSlots   TimeSlot[]
+  preferences BatchPreference[]
+}
+
+model Timetable {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdById String
+  createdBy   User     @relation("TimetableCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  slots       TimeSlot[]
+  groups      TimetableGroup[]
+}
+
+model TimeSlot {
+  id          String    @id @default(cuid())
+  timetableId String
+  timetable   Timetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  day         DayOfWeek
+  startTime   String    // Format: "HH:MM"
+  endTime     String    // Format: "HH:MM"
+  subjectId   String?
+  subject     Subject?  @relation(fields: [subjectId], references: [id])
+  slotTypeId  String
+  slotType    SlotType  @relation(fields: [slotTypeId], references: [id])
+  roomId      String?
+  room        Room?     @relation(fields: [roomId], references: [id])
+  facultyId   String?
+  faculty     User?     @relation("FacultySlots", fields: [facultyId], references: [id])
+  batchId     String?
+  batch       Batch?    @relation(fields: [batchId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model TimetableGroup {
+  id          String    @id @default(cuid())
+  timetableId String
+  timetable   Timetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  groupId     String
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime  @default(now())
+
+  @@unique([timetableId, groupId])
+}
+
+enum DayOfWeek {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
+model Group {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  code        String    @unique
+  codeActive  Boolean   @default(true)
+  defaultRole GroupRole @default(Viewer)
+  createdById String
+  createdBy   User      @relation("GroupCreator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  memberships GroupMembership[]
+  timetables  TimetableGroup[]
+}
+
+model GroupMembership {
+  id        String    @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole
+  joinedAt  DateTime  @default(now())
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+enum GroupRole {
+  Editor
+  Viewer
+}
+
+// Student preferences for filtering dashboard schedule
+model SlotTypePreference {
+  id         String   @id @default(cuid())
+  userId     String
+  slotTypeId String
+  enabled    Boolean  @default(true)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slotType   SlotType @relation(fields: [slotTypeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, slotTypeId])
+}
+
+model BatchPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  batchId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batch     Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, batchId])
+}
+
