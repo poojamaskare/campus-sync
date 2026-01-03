@@ -18,6 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Campus Sync",
   description: "Campus management system",
+  icons: {
+    icon: "/campus-sync-circular.svg",
+    shortcut: "/campus-sync-circular.svg",
+    apple: "/campus-sync-circular.svg",
+  },
 };
 
 export default function RootLayout({
