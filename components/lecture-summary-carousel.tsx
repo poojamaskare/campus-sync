@@ -106,13 +106,17 @@ export function LectureSummaryCarousel({ initialSlots, todayDate, userRole, canE
   
   const selectedDayOfWeek = getDayOfWeek(selectedDate)
   const isToday = isSameDay(selectedDate, today)
-  const selectedDateStr = selectedDate.toISOString().split('T')[0]
+  
+  // Get selected date as YYYY-MM-DD string (use local date, not UTC)
+  const getLocalDateStr = (date: Date) => 
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+  const selectedDateStr = getLocalDateStr(selectedDate)
 
   // Fetch slots when date changes
   const fetchSlots = React.useCallback(async (date: Date) => {
     setIsLoading(true)
     try {
-      const dateStr = date.toISOString().split('T')[0]
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
       const result = await getFacultyScheduleWithSummaries(dateStr)
       setSlots(result.slots)
     } catch (error) {
