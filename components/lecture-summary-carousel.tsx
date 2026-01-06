@@ -314,10 +314,10 @@ export function LectureSummaryCarousel({ initialSlots, todayDate, userRole, canE
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Coffee className="h-12 w-12 text-muted-foreground/50 mb-4" />
               <p className="text-lg font-medium text-muted-foreground">
-                {canEdit ? "No lectures assigned to you" : "No lectures scheduled"}
+                {canEdit ? "No lectures assigned to you" : "No summarized lectures for this day"}
               </p>
               <p className="text-sm text-muted-foreground/70">
-                {canEdit ? "You don't have any lectures on this day." : "Enjoy your day off!"}
+                {canEdit ? "You don't have any lectures on this day." : "Try another date or check back later."}
               </p>
             </CardContent>
           </Card>

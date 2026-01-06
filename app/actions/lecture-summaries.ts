@@ -135,6 +135,8 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
       // Apply student preferences filtering
       let shouldInclude = true
       
+      const summary = slot.lectureSummaries[0] || null
+      
       if (userRole === "Student") {
         // Check slot type preference
         if (enabledSlotTypeIds !== null && !enabledSlotTypeIds.includes(slot.slotTypeId)) {
@@ -147,10 +149,14 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
             shouldInclude = false
           }
         }
+        
+        // For students, show only slots that already have a summary
+        if (shouldInclude && !summary) {
+          shouldInclude = false
+        }
       }
 
       if (shouldInclude && !slotsMap.has(slot.id)) {
-        const summary = slot.lectureSummaries[0] || null
         slotsMap.set(slot.id, {
           id: slot.id,
           day: slot.day,
