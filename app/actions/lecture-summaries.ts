@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { DayOfWeek } from "@prisma/client"
 import { revalidatePath } from "next/cache"
+import { unstable_noStore as noStore } from "next/cache"
 import { getActivePreferences } from "./preferences"
 
 export interface LectureSummarySlot {
@@ -38,6 +39,9 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
   userRole: string
   canEdit: boolean
 }> {
+  // Disable caching to ensure fresh data after mutations
+  noStore()
+  
   const session = await auth()
   
   if (!session?.user?.id) {
@@ -66,9 +70,9 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
   ]
   const dayOfWeek = mapping[dayIndex]
   
-  // Create date range for summary filtering (using UTC)
-  const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
-  const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
+  // Create the exact date for summary filtering (using UTC midnight)
+  // For @db.Date fields, PostgreSQL stores dates without time, so we compare with the exact date
+  const targetDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
 
   // Get user's groups
   const userGroups = await prisma.groupMembership.findMany({
@@ -102,10 +106,7 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
               faculty: true,
               lectureSummaries: {
                 where: {
-                  date: {
-                    gte: startOfDay,
-                    lt: endOfDay
-                  }
+                  date: targetDate
                 }
               }
             },
