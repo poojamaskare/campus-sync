@@ -48,9 +48,13 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
   const userRole = session.user.role || "Student"
   const canEdit = userRole === "HOD" || userRole === "Faculty"
 
-  // Parse the date to get day of week
-  const date = new Date(dateStr)
-  const dayIndex = date.getDay()
+  // Parse the date string (YYYY-MM-DD) to get components
+  // This avoids timezone issues by parsing the date parts directly
+  const [year, month, day] = dateStr.split('-').map(Number)
+  
+  // Get day of week from the date components (using UTC to avoid timezone shifts)
+  const dateForDayOfWeek = new Date(Date.UTC(year, month - 1, day))
+  const dayIndex = dateForDayOfWeek.getUTCDay()
   const mapping: DayOfWeek[] = [
     "Sunday",
     "Monday",
@@ -62,11 +66,9 @@ export async function getFacultyScheduleWithSummaries(dateStr: string): Promise<
   ]
   const dayOfWeek = mapping[dayIndex]
   
-  // Create date range for summary filtering
-  const startOfDay = new Date(dateStr)
-  startOfDay.setHours(0, 0, 0, 0)
-  const endOfDay = new Date(dateStr)
-  endOfDay.setHours(23, 59, 59, 999)
+  // Create date range for summary filtering (using UTC)
+  const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+  const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
 
   // Get user's groups
   const userGroups = await prisma.groupMembership.findMany({
@@ -190,8 +192,9 @@ export async function getLectureSummary(slotId: string, dateStr: string) {
     return { success: false, error: "Unauthorized" }
   }
 
-  const date = new Date(dateStr)
-  date.setHours(0, 0, 0, 0)
+  // Parse date string (YYYY-MM-DD) using UTC to avoid timezone issues
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
 
   const summary = await prisma.lectureSummary.findUnique({
     where: {
@@ -277,8 +280,9 @@ export async function createOrUpdateLectureSummary(
     return { success: false, error: "You can only add summaries for your own slots" }
   }
 
-  const date = new Date(dateStr)
-  date.setHours(0, 0, 0, 0)
+  // Parse date string (YYYY-MM-DD) using UTC to avoid timezone issues
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
 
   try {
     const summary = await prisma.lectureSummary.upsert({

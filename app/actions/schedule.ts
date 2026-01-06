@@ -198,15 +198,15 @@ export async function getUserSchedule(): Promise<{
     }
   }) : []
   
-  // Build a map of slotId -> array of date strings (YYYY-MM-DD in local time)
+  // Build a map of slotId -> array of date strings (YYYY-MM-DD in UTC)
   const slotSummaries: Record<string, string[]> = {}
   for (const summary of summaries) {
     if (!slotSummaries[summary.slotId]) {
       slotSummaries[summary.slotId] = []
     }
-    // Use local date format to avoid timezone issues
+    // Use UTC date format to avoid timezone issues on different servers
     const d = summary.date
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
     slotSummaries[summary.slotId].push(dateStr)
   }
 

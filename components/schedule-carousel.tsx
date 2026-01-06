@@ -114,7 +114,8 @@ export function ScheduleCarousel({ weeklySchedule, todayDate, slotSummaries = {}
   const currentSlots = weeklySchedule[selectedDayOfWeek] || []
   const isToday = isSameDay(selectedDate, today)
   
-  // Get selected date as YYYY-MM-DD string for summary checking (use local date, not UTC)
+  // Get selected date as YYYY-MM-DD string (use local date components for display consistency)
+  // Note: This is matched against UTC dates from server, so we use local date which represents user's intended date
   const selectedDateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
 
   // Handle navigation
