@@ -123,9 +123,7 @@ export function MoreMenuContent({
   const showHodSection = session?.user?.role === "HOD"
   const resolvedName = userName ?? session?.user?.name ?? "User"
   const availabilityLabel = userAvailability ?? "Active"
-  const statusText = userStatus?.trim()
-    ? `${userStatus}`
-    : availabilityLabel
+  const statusText = userStatus?.trim() || ""
   const initials = getInitials(resolvedName)
   const availabilityDotClass = availabilityColorMap[availabilityLabel as Availability]
 
@@ -208,9 +206,11 @@ export function MoreMenuContent({
                   <p className="truncate text-sm font-medium text-foreground">
                     {resolvedName}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {statusText}
-                  </p>
+                  {statusText && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {statusText}
+                    </p>
+                  )}
                 </div>
               </Link>
             )
