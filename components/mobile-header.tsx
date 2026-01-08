@@ -17,36 +17,41 @@ interface MobileHeaderProps {
 export function MobileHeader({ session }: MobileHeaderProps) {
   const [isSigningOut, setIsSigningOut] = React.useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false)
+  
+  // Show drawer for both HOD (config items) and non-HOD (profile/settings)
+  const showDrawer = !!session?.user
 
   return (
     <header className="bg-background border-b fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between gap-2 px-4 md:hidden">
       {/* Left: Menu Trigger */}
-      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            aria-label="Open menu"
-          >
-            <MoreVertical className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-70 sm:w-80">
-          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <SheetDescription className="sr-only">
-            Navigate to different sections of the application
-          </SheetDescription>
-          <MobileNav 
-            session={session} 
-            isOpen={isDrawerOpen} 
-            onClose={() => setIsDrawerOpen(false)} 
-          />
-        </SheetContent>
-      </Sheet>
+      {showDrawer && (
+        <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="Open menu"
+            >
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-70 sm:w-80">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">
+              Navigate to different sections of the application
+            </SheetDescription>
+            <MobileNav 
+              session={session} 
+              isOpen={isDrawerOpen} 
+              onClose={() => setIsDrawerOpen(false)} 
+            />
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Right: Theme Toggle & Sign Out */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto">
         <ThemeToggle />
         <Button
           variant="ghost"

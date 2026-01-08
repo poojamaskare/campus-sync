@@ -3,50 +3,42 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, User, BookOpen, DoorOpen, Clock, Calendar, Users, Layers, Activity } from "lucide-react"
+import { LayoutDashboard, User, BookOpen, DoorOpen, Clock, Calendar, Users, Layers, Activity, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Session } from "next-auth"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 
-interface MobileNavProps {
-  session: Session | null
-  isOpen: boolean
-  onClose: () => void
-}
+// Shared nav items for bottom nav and drawer
+export const primaryNavItems = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Timetables",
+    href: "/dashboard/timetables",
+    icon: Calendar,
+  },
+  {
+    title: "Groups",
+    href: "/dashboard/groups",
+    icon: Users,
+  },
+  {
+    title: "Availability",
+    href: "/dashboard/availability",
+    icon: Activity,
+  },
+  {
+    title: "Lecture Summaries",
+    href: "/dashboard/lecture-summaries",
+    icon: BookOpen,
+  },
+] as const
 
-export function MobileNav({ session, isOpen, onClose }: MobileNavProps) {
-  const pathname = usePathname()
-
-  const navItems = [
-    {
-      title: "Dashboard",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Timetables",
-      href: "/dashboard/timetables",
-      icon: Calendar,
-    },
-    {
-      title: "Groups",
-      href: "/dashboard/groups",
-      icon: Users,
-    },
-    {
-      title: "Availability",
-      href: "/dashboard/availability",
-      icon: Activity,
-    },
-    {
-      title: "Lecture Summaries",
-      href: "/dashboard/lecture-summaries",
-      icon: BookOpen,
-    },
-  ]
-
-  const hodConfigItems = [
+export const hodConfigItems = [
     {
       title: "Subjects",
       href: "/dashboard/subjects",
@@ -69,6 +61,15 @@ export function MobileNav({ session, isOpen, onClose }: MobileNavProps) {
     },
   ]
 
+interface MobileNavProps {
+  session: Session | null
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function MobileNav({ session, isOpen, onClose }: MobileNavProps) {
+  const pathname = usePathname()
+  const navItems = primaryNavItems
   const showHodSection = session?.user?.role === "HOD"
 
   const getInitials = (name: string | null | undefined) => {
@@ -122,36 +123,6 @@ export function MobileNav({ session, isOpen, onClose }: MobileNavProps) {
         </>
       )}
 
-      {/* Main Navigation Section */}
-      <div className="mb-2">
-        <h3 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Navigation
-        </h3>
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.title}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-
       <Separator className="my-4" />
 
       {/* Profile Link */}
@@ -168,6 +139,23 @@ export function MobileNav({ session, isOpen, onClose }: MobileNavProps) {
         <User className="h-4 w-4" />
         <span>Profile</span>
       </Link>
+
+      {/* Settings Link (Non-HOD) */}
+      {!showHodSection && (
+        <Link
+          href="/dashboard/settings"
+          onClick={onClose}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            pathname === "/dashboard/settings"
+              ? "bg-primary/10 text-primary font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+        >
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
+        </Link>
+      )}
       </div>
 
       {/* User Profile Section at Bottom */}
